@@ -2,55 +2,55 @@
 #define LOGGER_H
 
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <mutex>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
+#include <syncstream>
 
-enum class LogLevel {
-    Debug,
-    Info,
-    Warning,
-    Error
-};
+enum class LogLevel { Debug, Info, Warning, Error };
 
-inline std::string logLevelToString(LogLevel level) {
-    switch (level) {
-        case LogLevel::Debug: return "\033[36m[DEBUG]\033[0m";    // Cyan
-        case LogLevel::Info: return "\033[32m[INFO]\033[0m";     // Green
-        case LogLevel::Warning: return "\033[33m[WARNING]\033[0m"; // Yellow
-        case LogLevel::Error: return "\033[31m[ERROR]\033[0m";   // Red
-        default: return "[UNKNOWN]";
-    }
+// ANSI color codes
+namespace LogColors {
+    const std::string Reset = "\033[0m";
+    const std::string Debug = "\033[36m";   // Cyan
+    const std::string Info = "\033[32m";    // Green
+    const std::string Warning = "\033[33m"; // Yellow
+    const std::string Error = "\033[31m";   // Red
 }
 
 inline std::string getCurrentTimestamp() {
     auto now = std::chrono::system_clock::now();
-    auto timeT = std::chrono::system_clock::to_time_t(now);
-    auto localTime = std::localtime(&timeT);
+    auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    auto localtime = *std::localtime(&time_t_now);
 
     std::ostringstream ss;
-    ss << std::put_time(localTime, "%Y-%m-%d %H:%M:%S");
+    ss << std::put_time(&localtime, "[%Y-%m-%d %H:%M:%S]");
     return ss.str();
 }
 
-// Thread-safe logging function
+inline std::pair<std::string, std::string> getLogLevelInfo(LogLevel level) {
+    switch (level) {
+        case LogLevel::Debug:   return { "DEBUG", LogColors::Debug };
+        case LogLevel::Info:    return { "INFO", LogColors::Info };
+        case LogLevel::Warning: return { "WARNING", LogColors::Warning };
+        case LogLevel::Error:   return { "ERROR", LogColors::Error };
+        default:                return { "UNKNOWN", LogColors::Reset };
+    }
+}
+
 template <typename... Args>
 void log(LogLevel level, const Args&... args) {
-    static std::mutex logMutex;
-    std::lock_guard<std::mutex> lock(logMutex);
+    auto [levelStr, color] = getLogLevelInfo(level);
+    std::osyncstream sync_out(std::cout);
 
-    std::ostringstream ss;
+    sync_out << getCurrentTimestamp() << " "
+    << color << levelStr << LogColors::Reset << ": ";
 
-    // Add timestamp and log level
-    ss << "[" << getCurrentTimestamp() << "] " << logLevelToString(level);
+    // Unpack and print all arguments
+    ((sync_out << args << " "), ...);
 
-    // Expand parameter pack into the stream
-    (void)std::initializer_list<int>{(ss << " " << args, 0)...};
-
-    // Print the final log message
-    std::cout << ss.str() << std::endl;
+    sync_out << "\n";
 }
 
 #endif // LOGGER_H

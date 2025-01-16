@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -O2
+CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic -O2
 
 # Target executable
 TARGET = logger

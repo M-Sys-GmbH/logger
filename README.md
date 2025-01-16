@@ -13,7 +13,7 @@ A simple and modern C++ logging utility that allows logging messages with differ
 
 ### Prerequisites
 
-- C++ compiler with support for C++17 or later.
+- C++ compiler with support for C++20 or later.
 - `make` build system.
 
 ### Building the Project
