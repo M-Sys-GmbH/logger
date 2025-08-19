@@ -1,6 +1,6 @@
 # Logger Utility
 
-A simple and modern C++ logging utility that allows logging messages with different log levels (Debug, Info, Warning, Error). The log messages include timestamps and can display multiple values with color-coded levels.
+A modern, lightweight C++ logging utility with support for multiple log levels (Debug, Info, Warning, Error). Features include timestamped log messages, color-coded output, and the ability to log multiple values in one statement - all without requiring a dedicated logger object. Perfect for debugging and monitoring applications in style!
 
 ## Features
 
